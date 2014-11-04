@@ -34,7 +34,7 @@ function mutate(ElementClass /* ...mutators */) {
         <ElementClass {...this.props} />
       ).type.prototype.render();
       
-      return mutators.forEach(function(element, mutator) {
+      return mutators.reduce(function(element, mutator) {
           mutator.call(element);  
           return element;
         }, 
@@ -42,6 +42,38 @@ function mutate(ElementClass /* ...mutators */) {
       );
     },
   });
+}
+
+function elementIsType(element, type) {
+  if (!element.type) {
+    return false;
+  } else if (typeof element.type === 'string') {
+    return element.type === type;
+  } else if (element.type.displayName) {
+    return element.type.displayName === type;
+  } else {
+    return false;
+  }
+}
+
+function query(element, type) {
+  var results = [];
+  
+  if (elementIsType(element, type)) {
+    results.push(element);
+  }
+
+  if (element.props && element.props.children) {
+    if (Array.isArray(element.props.children)) {
+      results = element.props.children.reduce(function(results, child) {
+        return results.concat(query(child, type));
+      }, results);
+    } else {
+      results = results.concat(query(element.props.children, type));
+    }
+  }
+
+  return results;
 }
 
 /**
@@ -58,16 +90,14 @@ var Bar = function() {
  * add a <div.new-content> element with some new content.
  */
 var Baz = function() {
-  this.props.children.filter(function(element) {    
-    return element.type.displayName === 'Content';
-  }).forEach(function(element) {
+  query(this, 'Content').forEach(function(element) {
     element.props.children = [
       ( <del>{ element.props.children }</del> ),
       ( <div class="new-content">
         The Baz mutator replaces Content elements!
       </div> )
     ];
-  })
+  });
 };
 
 // replace the original <Foo> with a class mutated by Bar and Baz
