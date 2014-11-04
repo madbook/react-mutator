@@ -32,7 +32,7 @@ function mutate(ElementClass /* ...mutators */) {
     render: function() {
       var renderedElement = (
         <ElementClass {...this.props} />
-      ).type.prototype.render();
+      ).type.prototype.render.call(this);
       
       return mutators.reduce(function(element, mutator) {
           mutator.call(element);  
