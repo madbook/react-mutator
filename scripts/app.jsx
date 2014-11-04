@@ -100,8 +100,16 @@ var Baz = function() {
   });
 };
 
+var Bat = function() {
+  query(this, 'del').forEach(function(element) {
+    element.props.onClick = function() {
+      alert('You clicked a <del> element!');
+    }
+  });
+};
+
 // replace the original <Foo> with a class mutated by Bar and Baz
-Foo = mutate(Foo, Bar, Baz);
+Foo = mutate(Foo, Bar, Baz, Bat);
 
 
 window.onReady(function() {
