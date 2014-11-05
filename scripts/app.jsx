@@ -1,3 +1,7 @@
+var MODES = [
+  'kill_all_humans',
+  'befriend_all_humans',
+]
 
 var Foo = React.createClass({
   render: function() {
@@ -8,6 +12,16 @@ var Foo = React.createClass({
       <Content>
         A foo has a header and some content.
       </Content>
+      <footer>
+        <p>
+          Here is some data:
+        </p>
+        <ul>
+          <li>Robots: { this.props.robots }</li>
+          <li>People: { this.props.people }</li>
+          <li>Mode: { MODES[this.props.mode] }</li>
+        </ul>
+      </footer>
     </div> );
   },
 });
@@ -17,7 +31,6 @@ var Content = React.createClass({
     return ( <div className="content" {...this.props} /> );
   },
 });
-
 
 /**
  * returns a React class with the given mutator functions applied
@@ -93,19 +106,20 @@ var Baz = function() {
   query(this, 'Content').forEach(function(element) {
     element.props.children = [
       ( <del>{ element.props.children }</del> ),
-      ( <div class="new-content">
-        The Baz mutator replaces Content elements!
-      </div> )
+      ( <a href='#'>
+        Change Mode
+      </a> )
     ];
   });
 };
 
 var Bat = function() {
-  query(this, 'del').forEach(function(element) {
-    element.props.onClick = function() {
-      alert('You clicked a <del> element!');
-    }
-  });
+  query(this, 'a').forEach(function(element) {
+    element.props.onClick = function(e) {
+      this._owner.props.mode = (this._owner.props.mode+ 1) % 2;
+      this._owner.forceUpdate();
+    }.bind(this)
+  }.bind(this));
 };
 
 // replace the original <Foo> with a class mutated by Bar and Baz
@@ -115,7 +129,7 @@ Foo = mutate(Foo, Bar, Baz, Bat);
 window.onReady(function() {
   var mountNode = document.getElementById('app');
   React.render(
-    ( <Foo /> ),
+    ( <Foo robots='7' people='7000000000' mode='0' /> ),
     mountNode
   );
 });
